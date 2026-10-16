@@ -44,6 +44,18 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
       - run: cargo test --locked
 
+  package:
+    name: Package (crates.io dry run)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
+      # Builds the .crate exactly as crates.io will, from the packaged files only.
+      - run: cargo publish --dry-run --locked
+
   e2e:
     name: End-to-end
     runs-on: ubuntu-24.04

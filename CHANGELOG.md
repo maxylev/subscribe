@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Releases publish the crate to crates.io (`cargo install subscribe`), using Trusted Publishing with a `CARGO_REGISTRY_TOKEN` fallback; re-runs skip versions that are already published.
+- CI verifies the crates.io package with `cargo publish --dry-run`.
+- Scripts load `SUBSCRIBE_BOT_TOKEN` from a local `.env` file.
+
+### Changed
+
+- The packaged crate includes the live integration test.
+
 ## [0.1.0] - 2026-10-16
 
 First public release.

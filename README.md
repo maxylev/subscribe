@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/maxylev/subscribe/actions/workflows/ci.yml/badge.svg)](https://github.com/maxylev/subscribe/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/maxylev/subscribe)](https://github.com/maxylev/subscribe/releases)
+[![crates.io](https://img.shields.io/crates/v/subscribe)](https://crates.io/crates/subscribe)
 
 A stateless, database-free subscription service in Rust. Users pay ERC-20
 tokens on-chain to rent **jobs** — HTTP requests or shell commands — that run
@@ -68,6 +69,16 @@ SUBSCRIBE_BOT_TOKEN=<token> ./scripts/demo.sh
 3. `/config {"name":"demo","kind":"http","interval_secs":30,"input":{"q":"rust"},"http":{"url":"https://example.com/?q={q}"}}`
 4. `/status` → `✅ active — 49m left`; the report arrives every 30 s.
    Use `/run` (or the ▶️ button) to trigger the job right away.
+
+## Install
+
+```bash
+cargo install subscribe --locked                  # from crates.io
+docker pull ghcr.io/maxylev/subscribe:latest      # container image
+```
+
+Prebuilt binaries for Linux (static musl, x86_64/aarch64) and Apple Silicon
+are attached to every [GitHub release](https://github.com/maxylev/subscribe/releases).
 
 ## Production
 
@@ -215,8 +226,11 @@ cargo clippy --all-targets -- -D warnings
 cargo test                                 # unit tests (BIP-32/EIP-55 vectors, ledger, jobs…)
 cargo test --test live -- --ignored        # live check against public Arbitrum RPC
 ./scripts/e2e.sh                           # two anvil chains + mock Telegram, full flow
-SUBSCRIBE_BOT_TOKEN=<token> ./scripts/bot_smoke.sh   # live Telegram smoke test
+./scripts/bot_smoke.sh                     # live Telegram smoke test
 ```
+
+The scripts read `SUBSCRIBE_BOT_TOKEN` from the environment or from a local,
+git-ignored `.env` file.
 
 Layout: `bip32` (keys and addresses), `config`, `eth` (JSON-RPC), `ledger`
 (payments → subscription), `store` (user files), `jobs` (execution),
@@ -238,11 +252,22 @@ Releases are tag-driven:
    3. builds static binaries for `x86_64`/`aarch64` Linux (musl) and Apple
       Silicon;
    4. pushes a multi-arch image to GHCR with SBOM and provenance;
-   5. publishes the GitHub release with checksums, build attestations and the
+   5. publishes the crate to crates.io (skipped if that version already exists,
+      so re-runs are safe);
+   6. publishes the GitHub release with checksums, build attestations and the
       changelog section as release notes.
+
+   crates.io authentication prefers [Trusted Publishing] (short-lived OIDC
+   tokens). Until it is configured, it falls back to the `CARGO_REGISTRY_TOKEN`
+   repository secret, which the first publish needs because the crate must
+   exist first. To configure it: crates.io → `subscribe` → Settings → Trusted
+   Publishing → add GitHub repository `maxylev/subscribe`, workflow
+   `release.yml`, environment `crates-io`. Then delete the secret.
 
    Tags with a pre-release suffix (`v1.2.0-rc.1`) are published as
    pre-releases and do not move `latest`.
+
+[Trusted Publishing]: https://crates.io/docs/trusted-publishing
 
 ## License
 

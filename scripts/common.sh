@@ -7,6 +7,15 @@ export KEY0=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 export SEED_HEX=73756273637269626520746573742073656564
 export BIN=./target/debug/subscribe
 
+# Load ./.env (e.g. SUBSCRIBE_BOT_TOKEN) without overriding the environment.
+if [[ -f .env ]]; then
+    while IFS='=' read -r key value; do
+        key="${key#"${key%%[![:space:]]*}"}" # trim leading whitespace
+        [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+        [[ -n "${!key:-}" ]] || export "$key=$value"
+    done <.env
+fi
+
 PIDS=()
 
 # Kill every background process registered with `track`.

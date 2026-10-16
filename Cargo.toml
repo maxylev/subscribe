@@ -9,7 +9,7 @@ repository = "https://github.com/maxylev/subscribe"
 readme = "README.md"
 keywords = ["subscription", "ethereum", "telegram", "erc20", "bip32"]
 categories = ["cryptography::cryptocurrencies", "command-line-utilities"]
-include = ["src/**/*.rs", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE", "config.example.toml"]
+include = ["src/**/*.rs", "tests/**/*.rs", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE", "config.example.toml"]
 
 [dependencies]
 anyhow = "1.0.104"

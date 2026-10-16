@@ -135,11 +135,63 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  crates:
+    name: Publish to crates.io
+    needs: [ci, verify, build, docker]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: crates-io
+      url: https://crates.io/crates/subscribe/${{ needs.verify.outputs.version }}
+    permissions:
+      contents: read
+      id-token: write # crates.io Trusted Publishing (OIDC)
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2.0.0
+        with:
+          cache: false
+      # Re-runs are safe: crates.io versions are immutable, so skip if present.
+      - name: Check whether this version is already published
+        id: exists
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            -A "subscribe-release (https://github.com/${GITHUB_REPOSITORY})" \
+            "https://crates.io/api/v1/crates/subscribe/${VERSION}")
+          echo "crates.io status for ${VERSION}: ${code}"
+          echo "published=$([[ "$code" == 200 ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      # Preferred: short-lived token via Trusted Publishing. Fails until a trusted
+      # publisher is configured for the crate on crates.io; the long-lived
+      # CARGO_REGISTRY_TOKEN secret is the fallback (required for the first publish).
+      - name: Authenticate (Trusted Publishing)
+        id: auth
+        if: steps.exists.outputs.published == 'false'
+        continue-on-error: true
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+      - name: Publish
+        if: steps.exists.outputs.published == 'false'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN }}
+          AUTH_MODE: ${{ steps.auth.outputs.token && 'trusted publishing' || 'CARGO_REGISTRY_TOKEN secret' }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${CARGO_REGISTRY_TOKEN}" ]]; then
+            echo "::error::No crates.io credentials: configure Trusted Publishing or the CARGO_REGISTRY_TOKEN secret"
+            exit 1
+          fi
+          echo "Publishing subscribe ${VERSION} using ${AUTH_MODE}"
+          cargo publish --locked
+
   # Publishing the GitHub release is the last step, so a release never exists
-  # without its container image.
+  # without its container image and crate.
   release:
     name: GitHub release
-    needs: [ci, verify, build, docker]
+    needs: [ci, verify, build, docker, crates]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
