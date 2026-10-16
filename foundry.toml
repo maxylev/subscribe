@@ -1,0 +1,5 @@
+# Only used to compile the test token for local chains (scripts/, README).
+[profile.default]
+src = "contracts"
+out = "out"
+cache_path = "cache"

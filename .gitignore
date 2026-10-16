@@ -1,0 +1,13 @@
+/target
+/data
+/dist
+# Foundry build output
+/cache
+/out
+# Local configuration (may contain secrets)
+/config.toml
+/config.*.toml
+!/config.example.toml
+.env
+*.log
+.DS_Store

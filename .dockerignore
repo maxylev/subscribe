@@ -1,0 +1,14 @@
+# Everything is excluded by default-ish; keep the context small and free of secrets.
+.git
+.github
+target
+data*
+config*.toml
+!config.example.toml
+cache
+out
+.agent-logs
+*.log
+.env
+.DS_Store
+# dist/ is intentionally NOT ignored: the `prebuilt` stage copies dist/<arch>/subscribe.

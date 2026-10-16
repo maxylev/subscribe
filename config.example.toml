@@ -1,0 +1,87 @@
+# subscribe configuration — copy to config.toml and adjust.
+#
+# Every [server] key is optional except `xpub`; the values below are the
+# defaults. Server keys can be overridden with SUBSCRIBE_* environment
+# variables (env wins) — keep the bot token in SUBSCRIBE_BOT_TOKEN, never in
+# a committed file. Unknown keys are rejected.
+
+[server]
+data_dir = "data"               # user files: data/{index}.json
+cron_interval_secs = 60         # how often due jobs are checked and run
+poll_secs = 25                  # Telegram getUpdates long-poll timeout
+job_timeout_secs = 15           # default AND maximum job run time
+job_max_output = 3500           # max job output bytes sent to Telegram
+max_concurrent_jobs = 4         # jobs executing at the same time
+use_chain_time = true           # "now" = newest block time across chains
+# bot_token = "123456:ABC..."   # prefer env SUBSCRIBE_BOT_TOKEN
+# tg_base_url = "https://api.telegram.org"
+
+# Defaults for every [[chain]] (each chain may override them):
+from_block = 0                  # first block scanned for payments
+log_range = 10000               # max blocks per eth_getLogs request
+confirmations = 0               # blocks behind head treated as final
+
+# Watch-only account xpub (m/44'/60'/0'/0); user #i pays to child i. The seed
+# stays offline. This value comes from the PUBLIC test seed used by the
+# README quickstart — replace it before going live:
+#   subscribe genxpub                       (random seed, printed to stderr)
+#   subscribe genxpub --seed-hex <hex>      (from an existing seed)
+xpub = "xpub6Dj6mvj7ceuLKaYpnAkU1S1WAXHUTY7dUJGxwJR6BRP28jaiGKLF7YhNe9LqfbVdiL6WpXmBCqa6nta9BGwMTWdvRagKEmK92Ze13w5avCw"
+
+# Pricing: rate_per_minute is the amount, in the token's smallest unit, that
+# buys one minute. A payment of A grants A * 60 / rate_per_minute seconds;
+# paying while active extends the current period, paying after a lapse
+# starts a new one. Values beyond 2^63 must be quoted strings.
+
+# ---- local development chain -------------------------------------------------
+# anvil --port 8545, then deploy the token (on a fresh anvil it lands at
+# 0x5FbDB2315678afecb367f032d93F642f64180aa3):
+#   forge create contracts/SubToken.sol:SubToken --rpc-url http://127.0.0.1:8545 \
+#     --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast
+
+[[chain]]
+name = "anvil"
+rpc_url = "http://127.0.0.1:8545"
+
+[[chain.token]]
+address = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+symbol = "SUB"
+decimals = 18
+rate_per_minute = "1000000000000000000"   # 1 SUB/min
+
+# ---- public chains (disabled; set enabled = true to use) ---------------------
+# Set from_block to the block where you start accepting payments: scanning
+# from genesis costs thousands of requests on the first scan.
+
+[[chain]]
+name = "ethereum"
+rpc_url = "https://ethereum-rpc.publicnode.com"
+from_block = 26200000
+confirmations = 12
+enabled = false
+
+[[chain.token]]
+address = "0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+symbol = "USDC"
+decimals = 6
+rate_per_minute = 1000000                 # 1 USDC/min
+
+[[chain.token]]
+address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+symbol = "USDT"
+decimals = 6
+rate_per_minute = 500000                  # 0.5 USDT/min
+# enabled = false                         # disable a token without deleting it
+
+[[chain]]
+name = "arbitrum"
+rpc_url = "https://arb1.arbitrum.io/rpc"
+from_block = 515000000
+confirmations = 20
+enabled = false
+
+[[chain.token]]
+address = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+symbol = "USDC"
+decimals = 6
+rate_per_minute = 1000000
