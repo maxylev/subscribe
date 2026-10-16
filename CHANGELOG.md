@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-16
+
 First public release.
 
 ### Added
@@ -25,4 +27,5 @@ First public release.
 - Bot tokens and RPC URLs are stripped from all error messages and logs; the token is redacted from `Debug` output.
 - The container runs as a non-root user.
 
-[Unreleased]: https://github.com/maxylev/subscribe/commits/main
+[Unreleased]: https://github.com/maxylev/subscribe/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/maxylev/subscribe/releases/tag/v0.1.0
